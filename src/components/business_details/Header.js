@@ -5,6 +5,8 @@ import MenuItem from "@mui/material/MenuItem";
 import PopupState, { bindTrigger, bindMenu } from "material-ui-popup-state";
 import { IoMdHome } from "react-icons/io";
 import { FaStore } from "react-icons/fa6";
+import { SlBookOpen } from "react-icons/sl";
+
 import { Link } from "react-router-dom";
 import UserContext from "../../store/userContext";
 // import { useNavigate } from "react-router-dom";
@@ -12,12 +14,11 @@ import UserContext from "../../store/userContext";
 const Header = (props) => {
   const { user_id } = useContext(UserContext);
 
-  // const navigate = useNavigate();
   const propsToPass = {
     user_id: user_id,
     business_id: props.id,
   };
-  console.log(propsToPass.business_id);
+
   return (
     <div>
       <div className="w-full bg-buttons flex flex-row justify-between p-5">
@@ -60,9 +61,58 @@ const Header = (props) => {
                     Add Items
                   </MenuItem>
 
-                  <MenuItem onClick={popupState.close}>Loading</MenuItem>
-                  <MenuItem onClick={popupState.close}>UnLoading</MenuItem>
-                  <MenuItem onClick={popupState.close}>Stock</MenuItem>
+                  <MenuItem
+                    onClick={popupState.close}
+                    component={Link}
+                    to={`/dailyreport/${propsToPass.business_id}`}
+                  >
+                    Daily Details
+                  </MenuItem>
+                  <MenuItem
+                    onClick={popupState.close}
+                    component={Link}
+                    to={`/stock/${propsToPass.business_id}`}
+                  >
+                    Stock
+                  </MenuItem>
+                </Menu>
+              </React.Fragment>
+            )}
+          </PopupState>
+          <PopupState variant="popover" popupId="demo-popup-menu">
+            {(popupState) => (
+              <React.Fragment>
+                <Button
+                  color="success"
+                  variant="text"
+                  {...bindTrigger(popupState)}
+                  startIcon={<SlBookOpen />}
+                  disableElevation
+                >
+                  Accounts
+                </Button>
+                <Menu {...bindMenu(popupState)}>
+                  {/* <MenuItem onClick={popupState.close}>
+                    Add Items
+                    <Link to={"/addStock"}></Link>
+                  </MenuItem> */}
+                  <MenuItem
+                    onClick={popupState.close}
+                    component={Link}
+                    to={`/addStock/${propsToPass.business_id}/${propsToPass.user_id}`}
+                  >
+                    Credits
+                  </MenuItem>
+
+                  <MenuItem
+                    onClick={popupState.close}
+                    component={Link}
+                    to={`/dailyreport/${propsToPass.business_id}`}
+                  >
+                    Cheques
+                  </MenuItem>
+                  <MenuItem onClick={popupState.close}>Pay Sheets</MenuItem>
+                  <MenuItem onClick={popupState.close}>Leger</MenuItem>
                 </Menu>
               </React.Fragment>
             )}

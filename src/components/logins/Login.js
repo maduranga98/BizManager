@@ -46,7 +46,7 @@ const Login = () => {
             <input
               type="email"
               placeholder="Email"
-              value="madmadu@asd.com"
+              value="madurangalakbima@gmail.com"
               className="text-bag p-2 rounded-md mb-2"
               ref={emailRef}
               required
@@ -57,7 +57,7 @@ const Login = () => {
               placeholder="Password"
               className="text-bag p-2 rounded-md mb-4"
               ref={passwordRef}
-              value="1231231123"
+              value="123456"
               required
             />
             <button

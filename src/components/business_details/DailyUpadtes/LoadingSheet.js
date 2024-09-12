@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { dailyLoading, getStock } from "../../../server_data/api";
+import CurrentDate from "../../../Modal/CurrentDate";
 
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -108,7 +109,7 @@ const LoadingSheet = (props) => {
 
   return (
     <div>
-      <h1>Need to show the date and time and weather</h1>
+      <CurrentDate />
       <div className="p-10 h-[50%] overflow-auto">
         <TableContainer component={Paper}>
           <Table

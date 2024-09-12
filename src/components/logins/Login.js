@@ -24,7 +24,7 @@ const Login = () => {
       const id = response.userId;
       const name = response.username;
       localStorage.setItem("token", token);
-      console.log(name);
+      console.log(response);
       setUser({ user_id: id, user_name: name, business_id: "" });
       setMessage("Login successful!");
       navigate("/dashboard");
@@ -35,7 +35,7 @@ const Login = () => {
   return (
     <div className="bg-bag min-h-screen flex flex-col justify-center items-center text-chars text-center font-serif">
       <h1 className="mb-5 text-xl">
-        Welcome to the
+        Welcome to back the
         <span className="font-bold text-color1"> BizManager</span>
       </h1>
       <div className="bg-stacks w-80 flex flex-col justify-center items-center rounded-md">

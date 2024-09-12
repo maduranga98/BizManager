@@ -4,6 +4,7 @@ import AddBusiness from "./business/AddBusiness";
 import UserContext from "../../store/userContext";
 import { getBusiness } from "../../server_data/api";
 import BusinessTable from "./business/BusinessTable";
+import Loading from "../../Modal/Loading";
 
 const Dashboard = () => {
   const [showForm, setShowForm] = useState(false);
@@ -68,7 +69,7 @@ const Dashboard = () => {
           </div>
         </div>
       ) : (
-        <h1>There is no registered business yet</h1>
+        <Loading />
       )}
 
       {showForm && (

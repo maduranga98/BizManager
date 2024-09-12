@@ -14,6 +14,7 @@ import ChequeDetail from "./components/ChequeDetail";
 import Expences from "./components/Expences";
 import ReturnDetails from "./components/ReturnDetails";
 import Salary from "./components/Salary";
+import CurrentDate from "../../../Modal/CurrentDate";
 
 const Unloading = (props) => {
   const [data, setData] = useState();
@@ -116,6 +117,7 @@ const Unloading = (props) => {
 
   return (
     <div>
+      <CurrentDate />
       <div className="p-10 h-90 overflow-auto text-center">
         <TableContainer component={Paper}>
           <Table
@@ -228,8 +230,10 @@ const Unloading = (props) => {
       <div>
         <ChequeDetail id={business_id} />
       </div>
-      <Salary />
-      <Expences />
+      <div className="flex flex-row m-5 justify-between">
+        <Salary id={business_id} />
+        <Expences id={business_id} />
+      </div>
     </div>
   );
 };

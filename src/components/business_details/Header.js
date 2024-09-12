@@ -17,6 +17,7 @@ const Header = (props) => {
   const propsToPass = {
     user_id: user_id,
     business_id: props.id,
+    name: props.name,
   };
 
   return (
@@ -99,7 +100,7 @@ const Header = (props) => {
                   <MenuItem
                     onClick={popupState.close}
                     component={Link}
-                    to={`/addStock/${propsToPass.business_id}/${propsToPass.user_id}`}
+                    to={`/accounts/credits/${propsToPass.business_id}`}
                   >
                     Credits
                   </MenuItem>
@@ -123,7 +124,7 @@ const Header = (props) => {
           <h2>Accounts</h2> */}
         </div>
         <div className="text-stacks">
-          Business Name:{" "}
+          Business Name:
           <span className="text-2xl text-chars">{props.name}</span>
         </div>
       </div>

@@ -13,6 +13,7 @@ import ItemsDetails from "./components/business_details/Items/ItemsDetails";
 import MainDashBoard from "./components/business_details/DailyUpadtes/MainDashBoard";
 import Stock from "./components/business_details/Stock/Stock";
 import Settings from "./components/business_details/Settings/Settings";
+import CreditBills from "./components/business_details/Accounts/CreditBills";
 const App = () => {
   return (
     <Router>
@@ -30,6 +31,10 @@ const App = () => {
         <Route path="/dailyreport/:business_id" element={<MainDashBoard />} />
         <Route path="/stock/:business_id" element={<Stock />} />
         <Route path="/settings/:business_id" element={<Settings />} />
+        <Route
+          path="/accounts/credits/:business_id"
+          element={<CreditBills />}
+        />
       </Routes>
     </Router>
   );

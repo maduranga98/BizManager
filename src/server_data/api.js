@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const api_url = process.env.API_URL;
+const api_url = process.env.API_URL || "http://localhost:3001";
 
 export const userList = async (uid) => {
   try {
@@ -264,5 +264,200 @@ export const addCheques = async (
   } catch (error) {
     console.error(error);
     return error.responce ? error.responce.status : 500;
+  }
+};
+
+// employees
+export const addEmployee = async (
+  business_id,
+  name,
+  address,
+  role,
+  mobile,
+  tele,
+  nic,
+  details,
+  daySalary
+) => {
+  try {
+    const responce = await axios.post(
+      `${api_url}/bizManager/employee/${business_id}`,
+      {
+        business_id,
+        name,
+        address,
+        role,
+        mobile,
+        tele,
+        nic,
+        details,
+        daySalary,
+      }
+    );
+    console.log(responce);
+    return responce.status;
+  } catch (error) {
+    console.error(error);
+    return error.responce ? error.responce.status : 500;
+  }
+};
+export const getEmployees = async (business_id) => {
+  try {
+    const responce = await axios.get(
+      `${api_url}/bizManager/employee/${business_id}`
+    );
+    console.log(responce);
+    return responce.data;
+  } catch (error) {
+    console.error(error);
+    return error.responce ? error.responce.status : 500;
+  }
+};
+// vehicle
+export const addVehicle = async (business_id, v_number, type, details) => {
+  try {
+    const responce = await axios.post(
+      `${api_url}/bizManager/vehicle/${business_id}`,
+      {
+        business_id,
+        v_number,
+        type,
+        details,
+      }
+    );
+    console.log(responce);
+    return responce.status;
+  } catch (error) {
+    console.error(error);
+    return error.responce ? error.responce.status : 500;
+  }
+};
+
+export const getVehicle = async (business_id) => {
+  try {
+    const responce = await axios.get(
+      `${api_url}/bizManager/vehicle/${business_id}`
+    );
+
+    return responce.data;
+  } catch (error) {
+    console.error(error);
+    return error.responce ? error.responce.status : 500;
+  }
+};
+
+//routes
+export const addRoutes = async (business_id, route, details) => {
+  try {
+    const responce = await axios.post(
+      `${api_url}/bizManager/routes/${business_id}`,
+      { route, details }
+    );
+    console.log(responce);
+    return responce.status;
+  } catch (error) {
+    return error.responce ? error.responce.status : 500;
+  }
+};
+
+export const getRoutes = async (business_id) => {
+  try {
+    const responce = await axios.get(
+      `${api_url}/bizManager/routes/${business_id}`
+    );
+    // console.log(responce);
+    return responce.data;
+  } catch (error) {
+    return error.responce ? error.responce.status : 500;
+  }
+};
+
+//add salary
+export const addSalary = async (business_id) => {
+  try {
+    const responce = await axios.post();
+  } catch (error) {
+    return error.responce ? error.responce.status : 500;
+  }
+};
+
+//* expences
+export const addExpences = async (business_id, date, reason, value) => {
+  try {
+    const responce = await axios.post(
+      `${api_url}/bizManager/expences/${business_id}`,
+      { date, reason, value }
+    );
+    return responce.status;
+  } catch (error) {
+    return error.responce ? error.responce.status : 500;
+  }
+};
+
+export const getExpences = async (business_id) => {
+  try {
+    const responce = await axios.get(
+      `{api_url}/bizManager/expences/${business_id}`
+    );
+    return responce.data;
+  } catch (error) {
+    return error.responce ? error.responce.status : 500;
+  }
+};
+export const getExpencesByMonth = async (business_id, month) => {
+  try {
+    const responce = await axios.post(
+      `{api_url}/bizManager/expences/${business_id}`,
+      { month }
+    );
+    return responce.data;
+  } catch (error) {
+    return error.responce ? error.responce.status : 500;
+  }
+};
+export const deleteExpences = async (business_id, expense_id) => {
+  try {
+    const responce = await axios.delete(
+      `{api_url}/bizManager/expences/${business_id}/${expense_id}`
+    );
+    return responce.status;
+  } catch (error) {
+    return error.responce ? error.responce.status : 500;
+  }
+};
+
+//* credit bills
+export const addCreditBills = async (business_id, name, value, route, date) => {
+  try {
+    const response = await axios.post(`${api_url}/credit/${business_id}`, {
+      name,
+      value,
+      route,
+      date,
+    });
+    return response.status;
+  } catch (error) {
+    return error.response ? error.response.status : 500;
+  }
+};
+
+export const getCreditBillsByDateAndRoute = async (
+  business_id,
+  route,
+  date
+) => {
+  try {
+    const response = await axios.get(`${api_url}/credit/${business_id}`, {
+      params: {
+        route,
+        date,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    // Ensure `error.response` is safely accessed
+    return error.response
+      ? error.response.data
+      : { status: 500, message: "Server Error" };
   }
 };

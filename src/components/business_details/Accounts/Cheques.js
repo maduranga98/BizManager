@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import SelectorModel from "./SelectorModel";
-import { getCreditBillsByDateAndRoute } from "../../../server_data/api";
+import { getChequesByRouteAndDate } from "../../../server_data/api";
 import { useParams, useNavigate } from "react-router-dom";
 import { IoArrowBackCircleSharp } from "react-icons/io5";
-const CreditBills = () => {
+
+const Cheques = () => {
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedRoute, setSelectedRoute] = useState("");
   const [selectedBills, setSelectedBills] = useState([]);
@@ -25,11 +26,12 @@ const CreditBills = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await getCreditBillsByDateAndRoute(
+        const response = await getChequesByRouteAndDate(
           business_id,
-          selectedRoute,
-          selectedDate
+          selectedDate,
+          selectedRoute
         );
+        console.log("API Response:", response); // Check what is being returned
         setSelectedBills(response);
       } catch (error) {
         console.error(error);
@@ -41,8 +43,9 @@ const CreditBills = () => {
   }, [selectedDate, selectedRoute, business_id]);
 
   // Calculate the total value of the credit bills
-  const totalValue = selectedBills.reduce((acc, bill) => acc + bill.value, 0);
-
+  const totalValue = Array.isArray(selectedBills)
+    ? selectedBills.reduce((acc, bill) => acc + bill.value, 0)
+    : 0;
   return (
     <div>
       <div className="flex flex-row justify-evenly p-2 bg-bag text-chars font-serif">
@@ -63,7 +66,7 @@ const CreditBills = () => {
       </div>
 
       {/* Table to display selectedBills */}
-      <div className="max-h-64 overflow-y-scroll">
+      <div className="max-h-64 overflow-y-scroll m-5">
         <table className="min-w-full table-auto border-collapse border border-gray-200">
           <thead className="bg-gray-100">
             <tr>
@@ -107,4 +110,4 @@ const CreditBills = () => {
   );
 };
 
-export default CreditBills;
+export default Cheques;

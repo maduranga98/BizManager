@@ -17,7 +17,7 @@ function reducer(state, action) {
   return newState;
 }
 
-const CashTable = (props) => {
+const CashTable = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const refs = {
     five: useRef(),
@@ -35,11 +35,11 @@ const CashTable = (props) => {
 
   return (
     <div className="w-50">
-      <table className="w-[400px] border border-color1">
-        <caption className="text-black font-serif font-bold">
+      <table className="w-[400px] border border-gray-300">
+        <caption className="text-black font-serif font-bold py-2">
           Cash Details
         </caption>
-        <tbody className="px-4 py-2 border">
+        <tbody>
           {[
             { type: "five", label: "5000", multiplier: 5000 },
             { type: "one", label: "1000", multiplier: 1000 },
@@ -48,24 +48,24 @@ const CashTable = (props) => {
             { type: "four", label: "50", multiplier: 50 },
             { type: "six", label: "20", multiplier: 20 },
           ].map(({ type, label, multiplier }) => (
-            <tr key={type} className="px-4 py-2 border border-color1">
-              <td>{label} *</td>
-              <td>
+            <tr key={type} className="border">
+              <td className="px-4 py-2">{label} *</td>
+              <td className="px-4 py-2">
                 <input
                   type="number"
                   ref={refs[type]}
                   onChange={() => handleChange(type, multiplier)}
-                  className="w-20 border border-b-black border-b-1 border-l-0 border-r-0 border-t-0 pl-2 "
+                  className="w-20 border-b border-black focus:outline-none pl-2"
                 />
               </td>
-              <td>{state[type]}</td>
+              <td className="px-4 py-2">{state[type]}</td>
             </tr>
           ))}
-          <tr className="px-4 py-2 border border-color1">
-            <td colSpan="2" className="font-semibold">
+          <tr className="border">
+            <td colSpan="2" className="font-semibold px-4 py-2">
               Total
             </td>
-            <td>{state.total}</td>
+            <td className="px-4 py-2">{state.total}</td>
           </tr>
         </tbody>
       </table>

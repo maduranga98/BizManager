@@ -1,9 +1,9 @@
 import React, { useRef } from "react";
 import { addItems } from "../../../server_data/api";
 import { useParams } from "react-router-dom";
-const AddStock = (props) => {
-  const { business_id, user_id } = useParams(); // Get the business_id from URL parameters
 
+const AddStock = (props) => {
+  const { business_id, user_id } = useParams();
   const nameRef = useRef();
   const priceRef = useRef();
   const unitsRef = useRef();

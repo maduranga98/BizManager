@@ -14,6 +14,8 @@ import MainDashBoard from "./components/business_details/DailyUpadtes/MainDashBo
 import Stock from "./components/business_details/Stock/Stock";
 import Settings from "./components/business_details/Settings/Settings";
 import CreditBills from "./components/business_details/Accounts/CreditBills";
+import Cheques from "./components/business_details/Accounts/Cheques";
+import PaySheet from "./components/business_details/Accounts/PaySheet";
 const App = () => {
   return (
     <Router>
@@ -35,6 +37,8 @@ const App = () => {
           path="/accounts/credits/:business_id"
           element={<CreditBills />}
         />
+        <Route path="/accounts/cheques/:business_id" element={<Cheques />} />
+        <Route path="/accounts/paysheet/:business_id" element={<PaySheet />} />
       </Routes>
     </Router>
   );

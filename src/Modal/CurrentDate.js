@@ -26,10 +26,10 @@ const CurrentDate = () => {
 
   return (
     <div className="flex flex-row space-x-4 m-5">
-      <h1 className="text-2xl font-serif font-bold text-black">
+      <h1 className="text-xl font-serif font-bold text-black">
         Date: {formattedDate}
       </h1>
-      <h1 className="text-2xl font-serif font-bold text-black">
+      <h1 className="text-xl font-serif font-bold text-black">
         Time: {formattedTime}
       </h1>
     </div>

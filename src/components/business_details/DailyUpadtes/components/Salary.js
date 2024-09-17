@@ -1,37 +1,53 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { getEmployees, addSalary } from "../../../../server_data/api";
+
 const Salary = (props) => {
   const [employees, setEmployees] = useState([]);
-  const salaryRef = useRef();
+  const [salaries, setSalaries] = useState({});
+
   useEffect(() => {
-    try {
-      const fetchData = async () => {
+    const fetchData = async () => {
+      try {
         const response = await getEmployees(props.id);
         if (response && Array.isArray(response)) {
           setEmployees(response);
         } else {
           setEmployees([]);
         }
-      };
-      fetchData();
-    } catch (error) {
-      console.log(error);
-    }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchData();
   }, [props.id]);
 
-  const onSubmitHandler = (event) => {
+  const onSalaryChange = (empId, amount) => {
+    setSalaries((prevSalaries) => ({
+      ...prevSalaries,
+      [empId]: amount,
+    }));
+  };
+
+  const onSubmitHandler = async (event) => {
     event.preventDefault();
     try {
       const addFunc = async () => {
-        const response = await addSalary();
+        for (const [empId, salary] of Object.entries(salaries)) {
+          await addSalary(empId, salary);
+        }
       };
-    } catch (error) {}
+      await addFunc();
+      console.log("Salaries added successfully");
+    } catch (error) {
+      console.log(error);
+    }
   };
+
   return (
     <div>
       <div className="mb-10">
-        <table className="border border-gray-300 ">
-          <caption>Salaray</caption>
+        <table className="border border-gray-300 w-full mx-auto">
+          <caption className="text-xl font-bold mb-4">Salaries</caption>
           <thead>
             <tr>
               <th className="px-4 py-2 border">Person</th>
@@ -39,21 +55,29 @@ const Salary = (props) => {
             </tr>
           </thead>
           <tbody>
-            {employees.map((e) => (
-              <tr key={e.emp_id}>
-                <td className="px-4 py-2 border">{e.name}</td>
+            {employees.map((employee) => (
+              <tr key={employee.emp_id}>
+                <td className="px-4 py-2 border">{employee.name}</td>
                 <td className="px-4 py-2 border">
                   <input
                     type="number"
-                    className="border border-gray-300 rounded"
-                    ref={salaryRef}
+                    className="border border-gray-300 rounded p-1 w-full"
+                    value={salaries[employee.emp_id] || ""}
+                    onChange={(e) =>
+                      onSalaryChange(employee.emp_id, e.target.value)
+                    }
                   />
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        <button onClick={onSubmitHandler}>Add Salary</button>
+        <button
+          onClick={onSubmitHandler}
+          className="mt-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+        >
+          Add Salary
+        </button>
       </div>
     </div>
   );

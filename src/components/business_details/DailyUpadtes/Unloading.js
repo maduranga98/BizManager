@@ -15,20 +15,25 @@ import Expences from "./components/Expences";
 import ReturnDetails from "./components/ReturnDetails";
 import Salary from "./components/Salary";
 import CurrentDate from "../../../Modal/CurrentDate";
+import WeatherSelector from "../../../Modal/WeatherSelector";
 
 const Unloading = (props) => {
+  console.log(props);
   const [data, setData] = useState();
-  const business_id = props.id;
+  const { business_id, routeName } = props;
   const [rows, setRows] = useState([]);
   const [inputValues, setInputValues] = useState([]);
+  const [selectedWeather, setSelectedWeather] = useState("");
 
+  console.log(business_id);
   useEffect(() => {
     const getData = async () => {
       try {
         const response = await getDailyLoading(business_id);
+        console.log(response);
+
         if (response) {
           setData(JSON.stringify(response, null, 2));
-          console.log(response);
         }
       } catch (error) {
         console.error("Failed to fetch data:", error);
@@ -37,6 +42,7 @@ const Unloading = (props) => {
 
     if (business_id) {
       getData();
+      console.log("here");
     }
   }, [business_id]);
 
@@ -81,6 +87,17 @@ const Unloading = (props) => {
     setInputValues(newInputValues);
   };
 
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  const formattedDate = `${year}-${month}-${day}`;
+
+  const handleWeatherChange = (weather) => {
+    setSelectedWeather(weather);
+    console.log("Selected Weather: ", weather);
+  };
+
   const handleSave = async () => {
     const dataToSave = rows.map((row, index) => ({
       ...row,
@@ -105,7 +122,7 @@ const Unloading = (props) => {
           data.total_price,
           data.add_free_cases,
           data.add_free_pieces,
-          "2024-08-10",
+          formattedDate,
           "Sunny"
         );
         console.log(response);
@@ -118,6 +135,8 @@ const Unloading = (props) => {
   return (
     <div>
       <CurrentDate />
+      <WeatherSelector onWeatherChange={handleWeatherChange} />
+
       <div className="p-10 h-90 overflow-auto text-center">
         <TableContainer component={Paper}>
           <Table
@@ -219,16 +238,16 @@ const Unloading = (props) => {
 
       {/* Other Datails Section */}
       <ReturnDetails />
-      <div className="ml-5 mr-5 p-5 border-2 border-b-buttons w-full rounded">
+      <div className="m-5 p-5 border-2 border-b-buttons w-full rounded">
         {/* Money Entering Section */}
         <div className="flex flex-row justify-evenly overflow-y-auto h-60">
           <CashTable />
-          <CreditTable />
+          <CreditTable routeName={routeName} />
           <CreditReceived />
         </div>
       </div>
       <div>
-        <ChequeDetail id={business_id} />
+        <ChequeDetail id={business_id} routeName={routeName} />
       </div>
       <div className="flex flex-row m-5 justify-between">
         <Salary id={business_id} />

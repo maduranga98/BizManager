@@ -9,18 +9,20 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
+import WeatherSelector from "../../../Modal/WeatherSelector";
+
 const LoadingSheet = (props) => {
   const business_id = props.id;
-  const [dataList, setDataList] = useState();
+  const [dataList, setDataList] = useState(null); // Initialize as null to handle properly in effect.
   const [rows, setRows] = useState([]);
   const [inputValues, setInputValues] = useState([]);
+  const [selectedWeather, setSelectedWeather] = useState("");
 
   useEffect(() => {
     const getData = async () => {
       try {
         const response = await getStock(business_id);
-
-        setDataList(JSON.stringify(response, null, 2));
+        setDataList(response); // Store directly as an object/array, no need to stringify.
       } catch (error) {
         console.error("Error fetching business:", error);
       }
@@ -30,36 +32,42 @@ const LoadingSheet = (props) => {
     }
   }, [business_id]);
 
-  useEffect(() => {
-    let parsedData = [];
-    try {
-      parsedData = JSON.parse(dataList);
-      console.log(parsedData);
-    } catch (error) {
-      console.error("Failed to parse DataList:", error);
-    }
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  const formattedDate = `${year}-${month}-${day}`;
 
-    if (Array.isArray(parsedData) && parsedData.length > 0) {
-      const newRows = parsedData.map((e) => ({
-        batch_number: e.batch_number,
-        item_name: e.item_name,
-        cases: e.cases,
-        pieces: e.pieces,
-        unit_price: e.unit_price,
-        free_case: e.free_case,
-        free_pieces: e.free_pieces,
-        number_of_items_per_case: e.number_of_items_per_case,
-        date: e.date,
-      }));
-      setRows(newRows);
-      setInputValues(
-        newRows.map(() => ({
-          add_cases: 0,
-          add_pieces: 0,
-          add_free_cases: 0,
-          add_free_pieces: 0,
-        }))
-      );
+  useEffect(() => {
+    if (!dataList) return; // Ensure dataList exists.
+
+    try {
+      if (Array.isArray(dataList) && dataList.length > 0) {
+        const newRows = dataList.map((e) => ({
+          batch_number: e.batch_number,
+          item_name: e.item_name,
+          cases: e.cases,
+          pieces: e.pieces,
+          unit_price: e.unit_price,
+          free_case: e.free_case,
+          free_pieces: e.free_pieces,
+          number_of_items_per_case: e.number_of_items_per_case,
+          date: e.date,
+        }));
+        setRows(newRows);
+        setInputValues(
+          newRows.map(() => ({
+            add_cases: 0,
+            add_pieces: 0,
+            add_free_cases: 0,
+            add_free_pieces: 0,
+          }))
+        );
+      } else {
+        console.log("No valid data received.");
+      }
+    } catch (error) {
+      console.error("Failed to process data:", error);
     }
   }, [dataList]);
 
@@ -68,7 +76,10 @@ const LoadingSheet = (props) => {
     newInputValues[index][field] = Number(value);
     setInputValues(newInputValues);
   };
-
+  const handleWeatherChange = (weather) => {
+    setSelectedWeather(weather);
+    console.log("Selected Weather: ", weather);
+  };
   const handleSave = async () => {
     const dataToSave = rows.map((row, index) => ({
       ...row,
@@ -77,12 +88,9 @@ const LoadingSheet = (props) => {
       add_free_cases: inputValues[index].add_free_cases,
       add_free_pieces: inputValues[index].add_free_pieces,
     }));
-    console.log(dataToSave);
 
     try {
       for (const data of dataToSave) {
-        console.log(data);
-
         const response = await dailyLoading(
           business_id,
           data.batch_number,
@@ -90,16 +98,17 @@ const LoadingSheet = (props) => {
           data.add_cases,
           data.add_pieces,
           data.unit_price,
-          data.total_price,
+          data.add_cases * data.unit_price +
+            data.add_pieces * (data.unit_price / data.number_of_items_per_case), // Example total price calculation
           data.add_free_cases,
           data.add_free_pieces,
-          "2024-08-10",
-          "Sunny"
-        ); // Send each data object separately
+          formattedDate, // Use the correctly formatted date
+          selectedWeather
+        );
         console.log(response);
       }
     } catch (error) {
-      console.error(error);
+      console.error("Error saving data:", error);
     }
   };
 
@@ -110,6 +119,7 @@ const LoadingSheet = (props) => {
   return (
     <div>
       <CurrentDate />
+      <WeatherSelector onWeatherChange={handleWeatherChange} />
       <div className="p-10 h-[50%] overflow-auto">
         <TableContainer component={Paper}>
           <Table
@@ -151,7 +161,7 @@ const LoadingSheet = (props) => {
                   <TableCell align="right">
                     <input
                       type="number"
-                      value={inputValues[index]?.add_cases || 0}
+                      // value={inputValues[index]?.add_cases || 0}
                       onChange={(e) =>
                         handleInputChange(index, "add_cases", e.target.value)
                       }
@@ -161,7 +171,7 @@ const LoadingSheet = (props) => {
                   <TableCell align="right">
                     <input
                       type="number"
-                      value={inputValues[index]?.add_pieces || 0}
+                      // value={inputValues[index]?.add_pieces || 0}
                       onChange={(e) =>
                         handleInputChange(index, "add_pieces", e.target.value)
                       }
@@ -171,7 +181,7 @@ const LoadingSheet = (props) => {
                   <TableCell align="right">
                     <input
                       type="number"
-                      value={inputValues[index]?.add_free_cases || 0}
+                      // value={inputValues[index]?.add_free_cases || 0}
                       onChange={(e) =>
                         handleInputChange(
                           index,
@@ -185,7 +195,7 @@ const LoadingSheet = (props) => {
                   <TableCell align="right">
                     <input
                       type="number"
-                      value={inputValues[index]?.add_free_pieces || 0}
+                      // value={inputValues[index]?.add_free_pieces || 0}
                       onChange={(e) =>
                         handleInputChange(
                           index,
@@ -201,12 +211,16 @@ const LoadingSheet = (props) => {
             </TableBody>
           </Table>
         </TableContainer>
-        <button
-          onClick={handleSave}
-          className="mt-4 bg-buttons text-chars p-2 rounded hover:bg-bag"
-        >
-          Save
-        </button>
+        {selectedWeather ? (
+          <button
+            onClick={handleSave}
+            className="mt-4 bg-buttons text-chars p-2 rounded hover:bg-bag"
+          >
+            Save
+          </button>
+        ) : (
+          <p>Please Select the weather</p>
+        )}
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+import { StayCurrentLandscapeTwoTone } from "@mui/icons-material";
 import axios from "axios";
 
 const api_url = process.env.API_URL || "http://localhost:3001";
@@ -237,6 +238,7 @@ export const getDetails = async (business_id) => {
   }
 };
 
+//* cheques
 export const addCheques = async (
   business_id,
   name,
@@ -267,7 +269,20 @@ export const addCheques = async (
   }
 };
 
-// employees
+export const getChequesByRouteAndDate = async (business_id, date, route_id) => {
+  console.log(date);
+  try {
+    const response = await axios.get(
+      `${api_url}/cheque/${business_id}/${date}/${route_id}`
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    return error.responce ? error.responce.status : 500;
+  }
+};
+//* employees
 export const addEmployee = async (
   business_id,
   name,
@@ -372,7 +387,7 @@ export const getRoutes = async (business_id) => {
   }
 };
 
-//add salary
+//* add salary
 export const addSalary = async (business_id) => {
   try {
     const responce = await axios.post();
@@ -459,5 +474,77 @@ export const getCreditBillsByDateAndRoute = async (
     return error.response
       ? error.response.data
       : { status: 500, message: "Server Error" };
+  }
+};
+
+export const getCreditBillsByRoute = async (business_id, route) => {
+  try {
+    const response = await axios.get(
+      `${api_url}/credit/${business_id}/${route}`
+    );
+    return response.data;
+  } catch (error) {
+    // Ensure `error.response` is safely accessed
+    return error.response
+      ? error.response.data
+      : { status: 500, message: "Server Error" };
+  }
+};
+
+//* company cheques
+
+export const addCompanyCheques = async (business_id, value, due_date, date) => {
+  try {
+    const response = await axios.post(
+      `${api_url}/bizManager/company_cheques/${business_id}`,
+      {
+        value,
+        due_date,
+        date,
+      }
+    );
+    return response.status;
+  } catch (error) {
+    return error.response ? error.response.status : 500;
+  }
+};
+
+//* attendence
+
+export const markAttendence = async (business_id, emp_id, date, absent) => {
+  try {
+    const responce = await axios.post(
+      `${api_url}/bizManager/attendence/${business_id}/${emp_id}`,
+      {
+        date,
+        absent,
+      }
+    );
+    return responce.status;
+  } catch (error) {
+    return error.response ? error.response.status : 500;
+  }
+};
+
+export const getAttendance = async (
+  business_id,
+  emp_id,
+  startdate,
+  enddate
+) => {
+  try {
+    const response = await axios.get(
+      `${api_url}/bizManager/attendance/${business_id}/${emp_id}`,
+      {
+        params: {
+          startdate,
+          enddate,
+        },
+      }
+    );
+
+    return response.data; // return the response data after successful call
+  } catch (error) {
+    return error.response ? error.response.status : 500; // handle the error
   }
 };

@@ -21,50 +21,49 @@ const ChequeDetail = (props) => {
   };
 
   const addingCheques = () => {
-    const now = new Date(); // Get the current date and time
-    console.log(props.id);
-    const year = now.getFullYear(); // Get the full year
-    const month = now.getMonth() + 1; // Get the month (0-11), add 1 to get 1-12
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
     const day = now.getDate();
     const formattedDate = `${year}-${month}-${day}`;
-    // console.log(tableRows);
+
     tableRows.forEach((e) => {
       const response = addCheques(
         props.id,
         e.customerName,
         e.bank,
         e.branch,
-        e.value,
         e.number,
+        e.value,
         e.date,
         formattedDate,
-        "route"
+        props.routeName
       );
       console.log(response);
     });
   };
 
   return (
-    <div className="w-50 text-center">
+    <div className="w-full text-center">
       <div className="mt-4">
-        <table className="border border-gray-300 w-[80%] mx-auto">
-          <caption className=" text-black font-serif font-bold">
+        <table className="border border-gray-300 w-[90%] mx-auto">
+          <caption className="text-black font-serif font-bold mb-4">
             Cheque Details
           </caption>
           <thead>
             <tr>
-              <th className="px-2 py-1 border border-color1">Customer Name</th>
-              <th className="px-2 py-1 border border-color1">Bank</th>
-              <th className="px-2 py-1 border border-color1">Branch</th>
-              <th className="px-2 py-1 border border-color1">Cheque Number</th>
-              <th className="px-2 py-1 border border-color1">Date</th>
-              <th className="px-2 py-1 border border-color1">Value</th>
+              <th className="px-2 py-1 border">Customer Name</th>
+              <th className="px-2 py-1 border">Bank</th>
+              <th className="px-2 py-1 border">Branch</th>
+              <th className="px-2 py-1 border">Cheque Number</th>
+              <th className="px-2 py-1 border">Date</th>
+              <th className="px-2 py-1 border">Value</th>
             </tr>
           </thead>
           <tbody>
             {tableRows.map((row, index) => (
               <tr key={index}>
-                <td className="px-2 py-1 border border-color1">
+                <td className="px-2 py-1 border">
                   <input
                     type="text"
                     className="border border-gray-300 rounded p-1 w-full"
@@ -81,7 +80,7 @@ const ChequeDetail = (props) => {
                     }
                   />
                 </td>
-                <td className="px-2 py-1 border border-color1">
+                <td className="px-2 py-1 border">
                   <input
                     type="text"
                     className="border border-gray-300 rounded p-1 w-full"
@@ -96,7 +95,7 @@ const ChequeDetail = (props) => {
                     }
                   />
                 </td>
-                <td className="px-2 py-1 border border-color1">
+                <td className="px-2 py-1 border">
                   <input
                     type="text"
                     className="border border-gray-300 rounded p-1 w-full"
@@ -111,7 +110,7 @@ const ChequeDetail = (props) => {
                     }
                   />
                 </td>
-                <td className="px-2 py-1 border border-color1">
+                <td className="px-2 py-1 border">
                   <input
                     type="number"
                     className="border border-gray-300 rounded p-1 w-full"
@@ -126,7 +125,7 @@ const ChequeDetail = (props) => {
                     }
                   />
                 </td>
-                <td className="px-2 py-1 border border-color1">
+                <td className="px-2 py-1 border">
                   <input
                     type="date"
                     className="border border-gray-300 rounded p-1 w-full"
@@ -140,7 +139,7 @@ const ChequeDetail = (props) => {
                     }
                   />
                 </td>
-                <td className="px-2 py-1 border border-color1">
+                <td className="px-2 py-1 border">
                   <input
                     type="number"
                     className="border border-gray-300 rounded p-1 w-full"
@@ -159,18 +158,20 @@ const ChequeDetail = (props) => {
             ))}
           </tbody>
         </table>
-        <button
-          onClick={addRow}
-          className="mt-4 bg-color1 text-white p-2 rounded hover:bg-chars text-center"
-        >
-          + Add a Row
-        </button>
-        <button
-          onClick={addingCheques}
-          className="mt-4 bg-color1 text-white p-2 rounded hover:bg-chars text-center"
-        >
-          + Add Cheques
-        </button>
+        <div className="flex justify-center gap-4 mt-4">
+          <button
+            onClick={addRow}
+            className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+          >
+            + Add a Row
+          </button>
+          <button
+            onClick={addingCheques}
+            className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600"
+          >
+            + Add Cheques
+          </button>
+        </div>
       </div>
     </div>
   );

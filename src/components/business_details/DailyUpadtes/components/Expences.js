@@ -21,21 +21,20 @@ function Expences(props) {
   const onSave = async (event) => {
     event.preventDefault();
     try {
-      const addData = async () => {
-        const response = await addExpences(props.id, "2024-09-06", creditTable);
-        console.log(response);
-      };
-      addData();
+      const currentDate = new Date().toISOString().split("T")[0]; // Get the current date in YYYY-MM-DD format
+      const response = await addExpences(props.id, currentDate, creditTable);
+      console.log(response);
+      // You could add feedback here, like a success message
     } catch (error) {
-      console.error(error);
+      console.error("Error saving expenses:", error);
     }
   };
 
   return (
     <div>
       <div className="mb-10">
-        <table className="border border-gray-300 ">
-          <caption>Expenses</caption>
+        <table className="border border-gray-300 w-full">
+          <caption className="font-bold text-lg mb-2">Expenses</caption>
           <thead>
             <tr>
               <th className="px-4 py-2 border">Reason</th>
@@ -49,34 +48,36 @@ function Expences(props) {
                   <input
                     type="text"
                     name="reason"
-                    className="border border-gray-300 rounded p-1"
+                    className="border border-gray-300 rounded p-1 w-full"
                     value={row.reason}
                     onChange={(event) => handleInputChange(index, event)}
+                    placeholder="Enter reason"
                   />
                 </td>
                 <td className="px-4 py-2 border">
                   <input
                     type="number"
                     name="value"
-                    className="border border-gray-300 rounded"
+                    className="border border-gray-300 rounded p-1 w-full"
                     value={row.value}
                     onChange={(event) => handleInputChange(index, event)}
+                    placeholder="Enter value"
                   />
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        <div className="flex flex-row space-x-3">
+        <div className="flex flex-row space-x-3 mt-4">
           <button
             onClick={onCreditTable}
-            className="mt-4 bg-color1 text-white p-2 rounded hover:bg-chars text-center"
+            className="bg-color1 text-white p-2 rounded hover:bg-chars"
           >
             + Add a Row
           </button>
           <button
             onClick={onSave}
-            className="mt-4 bg-color1 text-white p-2 rounded hover:bg-chars text-center"
+            className="bg-color1 text-white p-2 rounded hover:bg-chars"
           >
             Save
           </button>

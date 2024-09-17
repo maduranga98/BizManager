@@ -59,22 +59,23 @@ const Header = (props) => {
                     component={Link}
                     to={`/addStock/${propsToPass.business_id}/${propsToPass.user_id}`}
                   >
-                    Add Items
+                    Add Stock
                   </MenuItem>
 
-                  <MenuItem
-                    onClick={popupState.close}
-                    component={Link}
-                    to={`/dailyreport/${propsToPass.business_id}`}
-                  >
-                    Daily Details
-                  </MenuItem>
                   <MenuItem
                     onClick={popupState.close}
                     component={Link}
                     to={`/stock/${propsToPass.business_id}`}
                   >
                     Stock
+                  </MenuItem>
+
+                  <MenuItem
+                    onClick={popupState.close}
+                    component={Link}
+                    to={`/dailyreport/${propsToPass.business_id}?name=${propsToPass.name}`}
+                  >
+                    Daily Details
                   </MenuItem>
                 </Menu>
               </React.Fragment>
@@ -108,11 +109,17 @@ const Header = (props) => {
                   <MenuItem
                     onClick={popupState.close}
                     component={Link}
-                    to={`/dailyreport/${propsToPass.business_id}`}
+                    to={`/accounts/cheques/${propsToPass.business_id}`}
                   >
                     Cheques
                   </MenuItem>
-                  <MenuItem onClick={popupState.close}>Pay Sheets</MenuItem>
+                  <MenuItem
+                    onClick={popupState.close}
+                    component={Link}
+                    to={`/accounts/paysheet/${propsToPass.business_id}`}
+                  >
+                    Pay Sheets
+                  </MenuItem>
                   <MenuItem onClick={popupState.close}>Leger</MenuItem>
                 </Menu>
               </React.Fragment>

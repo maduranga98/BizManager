@@ -9,7 +9,7 @@ const ReturnDetails = () => {
 
   return (
     <div className="flex justify-center">
-      <div className="mb-10 w-1/2">
+      <div className="w-full">
         <table className="border border-black w-full table-auto">
           <caption className="text-lg font-semibold mb-4 text-bag">
             Return Details

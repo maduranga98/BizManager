@@ -9,7 +9,7 @@ const CreditTable = () => {
 
   return (
     <div className="w-50">
-      <div className="mb-10 text-center">
+      <div className="text-center">
         <table className="border border-gray-300 w-[400px]">
           <caption className="font-serif font-bold py-2">
             Credit Details

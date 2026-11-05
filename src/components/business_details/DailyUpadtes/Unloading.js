@@ -1,12 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { getDailyLoading, sendDailyUnloading } from "../../../server_data/api";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
 import CashTable from "./components/CashTable";
 import CreditTable from "./components/CreditTable";
 import CreditReceived from "./components/CreditReceived";
@@ -17,241 +10,323 @@ import Salary from "./components/Salary";
 import CurrentDate from "../../../Modal/CurrentDate";
 import WeatherSelector from "../../../Modal/WeatherSelector";
 
-const Unloading = (props) => {
-  console.log(props);
-  const [data, setData] = useState();
-  const { business_id, routeName } = props;
+const EMPTY_INPUT = {
+  add_cases: 0,
+  add_pieces: 0,
+  add_free_cases: 0,
+  add_free_pieces: 0,
+};
+
+const INPUT_COLUMNS = [
+  { key: "add_cases", label: "Cases" },
+  { key: "add_pieces", label: "Pieces" },
+  { key: "add_free_cases", label: "Free cases" },
+  { key: "add_free_pieces", label: "Free pcs" },
+];
+
+const getToday = () => {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${now.getFullYear()}-${month}-${day}`;
+};
+
+// Card shell; also makes child tables fill the card and hides their own captions.
+const Card = ({ title, children, className = "" }) => (
+  <section
+    className={`flex min-w-0 flex-col rounded-xl border border-buttons/10 bg-chars shadow-sm ${className}`}
+  >
+    {title && (
+      <h2 className="border-b border-buttons/10 px-5 py-3 font-sans text-sm font-semibold uppercase tracking-wide text-buttons/70">
+        {title}
+      </h2>
+    )}
+    <div className="min-w-0 flex-1 overflow-x-auto p-5 [&_table]:!w-full [&_table]:!border-buttons/10 [&_caption]:hidden [&_th]:!border-buttons/10 [&_td]:!border-buttons/10">
+      {children}
+    </div>
+  </section>
+);
+
+const Unloading = ({ business_id, routeName }) => {
   const [rows, setRows] = useState([]);
   const [inputValues, setInputValues] = useState([]);
   const [selectedWeather, setSelectedWeather] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [status, setStatus] = useState(null); // { type: "ok" | "error", text }
 
-  console.log(business_id);
   useEffect(() => {
-    const getData = async () => {
+    if (!business_id) return;
+    let cancelled = false;
+
+    (async () => {
+      setLoading(true);
       try {
         const response = await getDailyLoading(business_id);
-        console.log(response);
+        if (cancelled || !Array.isArray(response)) return;
 
-        if (response) {
-          setData(JSON.stringify(response, null, 2));
-        }
+        setRows(
+          response.map((e) => ({
+            batch_number: e.batch_number,
+            item_name: e.item_name,
+            cases: e.cases,
+            pieces: e.pieces,
+            unit_price: e.unit_price,
+            free_case: e.free_case,
+            free_pieces: e.free_pieces,
+            number_of_items_per_case: e.number_of_items_per_case,
+            date: e.date,
+          }))
+        );
+        setInputValues(response.map(() => ({ ...EMPTY_INPUT })));
       } catch (error) {
         console.error("Failed to fetch data:", error);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-    };
+    })();
 
-    if (business_id) {
-      getData();
-      console.log("here");
-    }
+    return () => {
+      cancelled = true;
+    };
   }, [business_id]);
 
-  useEffect(() => {
-    let parsedData = [];
-    try {
-      parsedData = JSON.parse(data);
-    } catch (error) {
-      console.error("Failed to parse DataList:", error);
-    }
+  const handleInputChange = useCallback((index, field, value) => {
+    setInputValues((prev) =>
+      prev.map((item, i) =>
+        i === index ? { ...item, [field]: Number(value) || 0 } : item
+      )
+    );
+  }, []);
 
-    if (Array.isArray(parsedData) && parsedData.length > 0) {
-      const newRows = parsedData.map((e) => ({
-        batch_number: e.batch_number,
-        item_name: e.item_name,
-        cases: e.cases,
-        pieces: e.pieces,
-        unit_price: e.unit_price,
-        free_case: e.free_case,
-        free_pieces: e.free_pieces,
-        number_of_items_per_case: e.number_of_items_per_case,
-        date: e.date,
-      }));
-      setRows(newRows);
-      setInputValues(
-        newRows.map(() => ({
-          add_cases: 0,
-          add_pieces: 0,
-          add_free_cases: 0,
-          add_free_pieces: 0,
-        }))
-      );
-    }
-  }, [data]);
-
-  if (rows.length === 0) {
-    return <div>No valid data available. Please check the data format.</div>;
-  }
-  const handleInputChange = (index, field, value) => {
-    const newInputValues = [...inputValues];
-    newInputValues[index][field] = Number(value);
-    setInputValues(newInputValues);
-  };
-
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-  const formattedDate = `${year}-${month}-${day}`;
-
-  const handleWeatherChange = (weather) => {
-    setSelectedWeather(weather);
-    console.log("Selected Weather: ", weather);
-  };
+  const totals = useMemo(
+    () =>
+      inputValues.reduce(
+        (acc, v) => ({
+          cases: acc.cases + v.add_cases,
+          pieces: acc.pieces + v.add_pieces,
+          freeCases: acc.freeCases + v.add_free_cases,
+          freePieces: acc.freePieces + v.add_free_pieces,
+        }),
+        { cases: 0, pieces: 0, freeCases: 0, freePieces: 0 }
+      ),
+    [inputValues]
+  );
 
   const handleSave = async () => {
-    const dataToSave = rows.map((row, index) => ({
-      ...row,
-      add_cases: inputValues[index].add_cases,
-      add_pieces: inputValues[index].add_pieces,
-      add_free_cases: inputValues[index].add_free_cases,
-      add_free_pieces: inputValues[index].add_free_pieces,
-    }));
-    console.log(dataToSave);
+    setSaving(true);
+    setStatus(null);
+    const date = getToday();
 
     try {
-      for (const data of dataToSave) {
-        console.log(data);
-
-        const response = await sendDailyUnloading(
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const input = inputValues[i];
+        await sendDailyUnloading(
           business_id,
-          data.batch_number,
-          data.item_name,
-          data.add_cases,
-          data.add_pieces,
-          data.unit_price,
-          data.total_price,
-          data.add_free_cases,
-          data.add_free_pieces,
-          formattedDate,
-          "Sunny"
+          row.batch_number,
+          row.item_name,
+          input.add_cases,
+          input.add_pieces,
+          row.unit_price,
+          row.total_price,
+          input.add_free_cases,
+          input.add_free_pieces,
+          date,
+          selectedWeather || "Sunny"
         );
-        console.log(response);
       }
+      setStatus({ type: "ok", text: "Unloading saved" });
     } catch (error) {
       console.error(error);
+      setStatus({ type: "error", text: "Save failed. Please try again." });
+    } finally {
+      setSaving(false);
     }
   };
 
+  const numberInput =
+    "w-full min-w-[3.5rem] rounded-md border border-buttons/20 bg-chars px-2 py-1.5 text-right text-sm tabular-nums text-black outline-none transition focus:border-bag focus:ring-2 focus:ring-bag/20";
+
   return (
-    <div>
-      <CurrentDate />
-      <WeatherSelector onWeatherChange={handleWeatherChange} />
+    <div className="min-h-screen bg-stacks/10">
+      <div className="mx-auto w-full max-w-[1920px] space-y-6 px-4 py-6 md:px-6 xl:px-10 2xl:px-14">
+        {/* Header */}
+        <header className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-buttons/10 bg-chars px-5 py-3 shadow-sm">
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
+            <h1 className="font-serif text-xl font-bold text-black">
+              Unloading
+            </h1>
+            <div className="[&>div]:!m-0">
+              <CurrentDate />
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="[&>div]:!m-0">
+              <WeatherSelector onWeatherChange={setSelectedWeather} />
+            </div>
+            {status && (
+              <span
+                role="status"
+                className={`text-sm ${
+                  status.type === "ok" ? "text-bag" : "text-black font-semibold"
+                }`}
+              >
+                {status.text}
+              </span>
+            )}
+            <button
+              onClick={handleSave}
+              disabled={saving || rows.length === 0}
+              className="rounded-lg bg-buttons px-6 py-2.5 text-sm font-medium text-chars transition hover:bg-bag disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {saving ? "Saving…" : "Save unloading"}
+            </button>
+          </div>
+        </header>
 
-      <div className="p-10 h-90 overflow-auto text-center">
-        <TableContainer component={Paper}>
-          <Table
-            sx={{ minWidth: 450 }}
-            size="small"
-            aria-label="a dense table"
-            className="bg-chars"
-          >
-            <TableHead className="font-serif text-2xl text-chars">
-              <TableRow className="bg-bag">
-                <TableCell>Batch Number</TableCell>
-                <TableCell align="right">Item Name</TableCell>
-                <TableCell align="right">Cases</TableCell>
-                <TableCell align="right">Pieces</TableCell>
-                <TableCell align="right">Unit Price</TableCell>
-                <TableCell align="right">Free Cases</TableCell>
-                <TableCell align="right">Free Pieces</TableCell>
-                <TableCell align="right">Add Cases</TableCell>
-                <TableCell align="right">Add Pieces</TableCell>
-                <TableCell align="right">Add Free Cases</TableCell>
-                <TableCell align="right">Add Free Pieces</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {rows.map((row, index) => (
-                <TableRow
-                  key={index}
-                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                >
-                  <TableCell component="th" scope="row">
-                    {row.batch_number}
-                  </TableCell>
-                  <TableCell align="right">{row.item_name}</TableCell>
-                  <TableCell align="right">{row.cases}</TableCell>
-                  <TableCell align="right">{row.pieces}</TableCell>
-                  <TableCell align="right">{row.unit_price}</TableCell>
-                  <TableCell align="right">{row.free_case}</TableCell>
-                  <TableCell align="right">{row.free_pieces}</TableCell>
-                  <TableCell align="right">
-                    <input
-                      type="number"
-                      value={inputValues[index]?.add_cases || 0}
-                      onChange={(e) =>
-                        handleInputChange(index, "add_cases", e.target.value)
-                      }
-                      className="border-2 border-black rounded-md p-1 w-12"
-                    />
-                  </TableCell>
-                  <TableCell align="right">
-                    <input
-                      type="number"
-                      value={inputValues[index]?.add_pieces || 0}
-                      onChange={(e) =>
-                        handleInputChange(index, "add_pieces", e.target.value)
-                      }
-                      className="border-2 border-black rounded-md p-1 w-12"
-                    />
-                  </TableCell>
-                  <TableCell align="right">
-                    <input
-                      type="number"
-                      value={inputValues[index]?.add_free_cases || 0}
-                      onChange={(e) =>
-                        handleInputChange(
-                          index,
-                          "add_free_cases",
-                          e.target.value
-                        )
-                      }
-                      className="border-2 border-black rounded-md p-1 w-12"
-                    />
-                  </TableCell>
-                  <TableCell align="right">
-                    <input
-                      type="number"
-                      value={inputValues[index]?.add_free_pieces || 0}
-                      onChange={(e) =>
-                        handleInputChange(
-                          index,
-                          "add_free_pieces",
-                          e.target.value
-                        )
-                      }
-                      className="border-2 border-black rounded-md p-1 w-12"
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <button
-          onClick={handleSave}
-          className="mt-4 w-30 bg-buttons text-chars p-2 rounded hover:bg-bag"
-        >
-          Save
-        </button>
-      </div>
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+          {/* Stock reconciliation */}
+          <section className="flex min-w-0 flex-col rounded-xl border border-buttons/10 bg-chars shadow-sm xl:col-span-8 2xl:col-span-9">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-buttons/10 px-5 py-3">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-buttons/70">
+                Stock returned
+              </h2>
+              <div className="flex gap-2 text-xs text-buttons/70">
+                {[
+                  ["Cases", totals.cases],
+                  ["Pieces", totals.pieces],
+                  ["Free cases", totals.freeCases],
+                  ["Free pcs", totals.freePieces],
+                ].map(([label, value]) => (
+                  <span
+                    key={label}
+                    className="rounded-full bg-stacks/40 px-3 py-1 tabular-nums"
+                  >
+                    {label}: <b className="text-black">{value}</b>
+                  </span>
+                ))}
+              </div>
+            </div>
 
-      {/* Other Datails Section */}
-      <ReturnDetails />
-      <div className="m-5 p-5 border-2 border-b-buttons w-full rounded">
-        {/* Money Entering Section */}
-        <div className="flex flex-row justify-evenly overflow-y-auto h-60">
-          <CashTable />
-          <CreditTable routeName={routeName} />
-          <CreditReceived />
+            {loading ? (
+              <p className="p-10 text-center text-sm text-buttons/60">
+                Loading…
+              </p>
+            ) : rows.length === 0 ? (
+              <p className="p-10 text-center text-sm text-buttons/60">
+                No loading data found for today.
+              </p>
+            ) : (
+              <div className="max-h-[calc(100vh-16rem)] min-h-[24rem] overflow-auto">
+                <table className="w-full border-separate border-spacing-0 text-sm">
+                  <thead className="sticky top-0 z-10 bg-buttons text-chars">
+                    <tr className="text-xs uppercase tracking-wide">
+                      <th className="px-4 py-3 text-left font-medium">Batch</th>
+                      <th className="px-4 py-3 text-left font-medium">Item</th>
+                      <th className="px-4 py-3 text-right font-medium">Cases</th>
+                      <th className="px-4 py-3 text-right font-medium">
+                        Pieces
+                      </th>
+                      <th className="px-4 py-3 text-right font-medium">
+                        Unit price
+                      </th>
+                      <th className="px-4 py-3 text-right font-medium">
+                        Free cases
+                      </th>
+                      <th className="px-4 py-3 text-right font-medium">
+                        Free pcs
+                      </th>
+                      {INPUT_COLUMNS.map((c) => (
+                        <th
+                          key={c.key}
+                          className="bg-bag px-4 py-3 text-right font-medium"
+                        >
+                          + {c.label}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((row, index) => (
+                      <tr
+                        key={`${row.batch_number}-${index}`}
+                        className="transition hover:bg-stacks/20"
+                      >
+                        <td className="border-b border-buttons/10 px-4 py-2 tabular-nums">
+                          {row.batch_number}
+                        </td>
+                        <td className="border-b border-buttons/10 px-4 py-2 font-medium text-black">
+                          {row.item_name}
+                        </td>
+                        {[
+                          row.cases,
+                          row.pieces,
+                          row.unit_price,
+                          row.free_case,
+                          row.free_pieces,
+                        ].map((v, i) => (
+                          <td
+                            key={i}
+                            className="border-b border-buttons/10 px-4 py-2 text-right tabular-nums text-buttons/80"
+                          >
+                            {v}
+                          </td>
+                        ))}
+                        {INPUT_COLUMNS.map((c) => (
+                          <td
+                            key={c.key}
+                            className="border-b border-buttons/10 px-2 py-2"
+                          >
+                            <input
+                              type="number"
+                              min="0"
+                              aria-label={`${row.item_name} ${c.label}`}
+                              value={inputValues[index]?.[c.key] ?? 0}
+                              onChange={(e) =>
+                                handleInputChange(index, c.key, e.target.value)
+                              }
+                              className={numberInput}
+                            />
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+
+          {/* Side column: returns + cash */}
+          <div className="flex min-w-0 flex-col gap-6 xl:col-span-4 2xl:col-span-3">
+            <Card title="Returns">
+              <ReturnDetails />
+            </Card>
+            <Card title="Cash" className="flex-1">
+              <CashTable />
+            </Card>
+          </div>
+
+          {/* Money in */}
+          <Card title="Credit bills" className="xl:col-span-4">
+            <CreditTable routeName={routeName} />
+          </Card>
+          <Card title="Credit received" className="xl:col-span-4">
+            <CreditReceived />
+          </Card>
+          <Card title="Salaries" className="xl:col-span-4">
+            <Salary id={business_id} />
+          </Card>
+
+          {/* Cheques + expenses */}
+          <Card title="Cheques" className="xl:col-span-8">
+            <ChequeDetail id={business_id} routeName={routeName} />
+          </Card>
+          <Card title="Expenses" className="xl:col-span-4">
+            <Expences id={business_id} />
+          </Card>
         </div>
-      </div>
-      <div>
-        <ChequeDetail id={business_id} routeName={routeName} />
-      </div>
-      <div className="flex flex-row m-5 justify-between">
-        <Salary id={business_id} />
-        <Expences id={business_id} />
       </div>
     </div>
   );

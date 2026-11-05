@@ -45,7 +45,7 @@ const Salary = (props) => {
 
   return (
     <div>
-      <div className="mb-10">
+      <div>
         <table className="border border-gray-300 w-full mx-auto">
           <caption className="text-xl font-bold mb-4">Salaries</caption>
           <thead>

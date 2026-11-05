@@ -32,7 +32,7 @@ function Expences(props) {
 
   return (
     <div>
-      <div className="mb-10">
+      <div>
         <table className="border border-gray-300 w-full">
           <caption className="font-bold text-lg mb-2">Expenses</caption>
           <thead>
